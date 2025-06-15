@@ -532,7 +532,7 @@
 
     <div class="faq-item">
       <div class="faq-question">Como vou receber o acesso ao programa ‘Códigos da Sedução Secreta’?</div>
-      <div class="faq-answer">Logo após a compra, você receberá um e-mail com login e senha para acessar a plataforma exclusiva.</div>
+      <div class="faq-answer">Logo após a compra, você receberá um e-mail com login para acessar.</div>
     </div>
 
     <div class="faq-item">
@@ -542,11 +542,11 @@
 
     <div class="faq-item">
       <div class="faq-question">Por quanto tempo terei acesso?</div>
-      <div class="faq-answer">O acesso é vitalício! Você pode assistir quando quiser e quantas vezes quiser.</div>
+      <div class="faq-answer">O acesso é vitalício! Você pode ver quando quiser e quantas vezes quiser.</div>
     </div>
 
     <div class="faq-item">
-      <div class="faq-question">Por que está tão barato? 12x de R$16?</div>
+      <div class="faq-question">Por que está tão barato? 12x de R$02,04?</div>
       <div class="faq-answer">Queremos democratizar o acesso ao conhecimento. Esse preço especial é por tempo LIMITADO.</div>
     </div>
 
@@ -614,75 +614,87 @@
 </section>
 
 
+<script>
+  function iniciarContador(duracaoHoras) {
+    // Verifica se já há um fim salvo no localStorage
+    let fim = localStorage.getItem("fimContador");
 
-  <script>
-    function iniciarContador(duracaoHoras) {
-      const fim = new Date().getTime() + duracaoHoras * 60 * 60 * 1000;
-
-      function atualizar() {
-        const agora = new Date().getTime();
-        const restante = fim - agora;
-
-        if (restante <= 0) {
-          document.getElementById("contador").textContent = "00:00:00";
-          return;
-        }
-
-        const h = String(Math.floor(restante / 3600000)).padStart(2, "0");
-        const m = String(Math.floor((restante % 3600000) / 60000)).padStart(2, "0");
-        const s = String(Math.floor((restante % 60000) / 1000)).padStart(2, "0");
-
-        document.getElementById("contador").textContent = `${h}:${m}:${s}`;
-      }
-
-      atualizar();
-      setInterval(atualizar, 1000);
+    if (!fim) {
+      // Define um novo fim de 3 horas
+      fim = new Date().getTime() + duracaoHoras * 60 * 60 * 1000;
+      localStorage.setItem("fimContador", fim);
+    } else {
+      fim = parseInt(fim);
     }
 
-    function detectarLocalizacao() {
-      const mensagem = document.getElementById("mensagem");
+    function atualizar() {
+      const agora = new Date().getTime();
+      const restante = fim - agora;
 
-      if (!navigator.geolocation) {
-        mensagem.innerHTML = `Você e mulheres próximas à <span id="regiao">sua região</span> foram selecionadas para participarem desse programa e receberam um desconto especial válido por:`;
-        iniciarContador(10);
+      if (restante <= 0) {
+        document.getElementById("contador").textContent = "00:00:00";
+        localStorage.removeItem("fimContador"); // Limpa ao expirar
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
+      const h = String(Math.floor(restante / 3600000)).padStart(2, "0");
+      const m = String(Math.floor((restante % 3600000) / 60000)).padStart(2, "0");
+      const s = String(Math.floor((restante % 60000) / 1000)).padStart(2, "0");
 
-          try {
-            const resposta = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`
-            );
-            const dados = await resposta.json();
-
-            const cidade =
-              dados.address.city ||
-              dados.address.town ||
-              dados.address.village ||
-              dados.address.county ||
-              dados.address.state ||
-              "sua região";
-            mensagem.innerHTML = `Você e mulheres próximas à <span id="regiao">${cidade}</span> foram selecionadas para participarem desse programa e receberam um desconto especial válido por:`;
-          } catch {
-            mensagem.innerHTML = `Você e mulheres próximas à <span id="regiao">sua região</span> foram selecionadas para participarem desse programa e receberam um desconto especial válido por:`;
-          }
-
-          iniciarContador(10);
-        },
-        () => {
-          mensagem.innerHTML = `Você e mulheres próximas à <span id="regiao">sua região</span> foram selecionadas para participarem desse programa e receberam um desconto especial válido por:`;
-          iniciarContador(10);
-        }
-      );
+      document.getElementById("contador").textContent = `${h}:${m}:${s}`;
     }
 
-    detectarLocalizacao();
-  </script>
+    atualizar();
+    setInterval(atualizar, 1000);
+  }
 
+  function detectarLocalizacao() {
+    const mensagem = document.getElementById("mensagem");
+
+    if (!navigator.geolocation) {
+      mensagem.innerHTML = `Você e mulheres próximas à <span id="regiao">sua região</span> foram selecionadas para participarem desse programa e receberam um desconto especial válido por:`;
+      iniciarContador(3); // 🔁 ALTERADO para 3
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        try {
+          const resposta = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`
+          );
+          const dados = await resposta.json();
+
+          const cidade =
+            dados.address.city ||
+            dados.address.town ||
+            dados.address.village ||
+            dados.address.county ||
+            dados.address.state ||
+            "sua região";
+
+          mensagem.innerHTML = `Você e mulheres próximas à <span id="regiao">${cidade}</span> foram selecionadas para participarem desse programa e receberam um desconto especial válido por:`;
+        } catch {
+          mensagem.innerHTML = `Você e mulheres próximas à <span id="regiao">sua região</span> foram selecionadas para participarem desse programa e receberam um desconto especial válido por:`;
+        }
+
+        iniciarContador(3); // 🔁 ALTERADO para 3
+      },
+      () => {
+        mensagem.innerHTML = `Você e mulheres próximas à <span id="regiao">sua região</span> foram selecionadas para participarem desse programa e receberam um desconto especial válido por:`;
+        iniciarContador(3); // 🔁 ALTERADO para 3
+      }
+    );
+  }
+
+  detectarLocalizacao();
+</script>
+
+
+  
 </body>
 
 </html>
